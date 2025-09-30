@@ -1,6 +1,6 @@
 export default function Settings() {
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 text-white">
       <div>
         <label className="block text-sm mb-2 uppercase tracking-wide">
           Wallet Address
