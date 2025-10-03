@@ -58,6 +58,7 @@ export default function App() {
             startMiner={startMiner}
             mining={mining}
             setMining={setMining}
+            sessionData={sessionData}
           />
         )}
         {page === "Logs" && <Logs log={logs} />}
