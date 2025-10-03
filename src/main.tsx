@@ -3,3 +3,14 @@ import "./index.css";
 import App from "./App.tsx";
 
 createRoot(document.getElementById("root")!).render(<App />);
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker
+    .register("/service-worker.js")
+    .then((e) => {
+      console.log(e);
+    })
+    .catch((e) => {
+      console.error(e);
+    });
+}
