@@ -10,33 +10,52 @@ interface minigData {
   token: string;
   receiverAddress: string;
   senderAddress: "0x000000000000000000000000000001";
-  uniqueID: string | number;
+  // uniqueID: string | number;
   timestamp: string;
 }
 export default function App() {
   const ws = new WebSocket("ws://localhost:3000");
   const worker = new Worker(new URL("./worker.js", import.meta.url));
+  const date = new Date();
 
   const [page, setPage] = useState<Page>("Miner"); //page for navigation
-  const [logs, setLogs] = useState<unknown>([]); //logs to be displayed
+  const [logs, setLogs] = useState<unknown>([{ time: "00.00", info: "" }]); //logs to be displayed
   const [sessionData, setSessionData] = useState<minigData>({
     //session data mined and sent to the blockchain for validation
     token: "",
     receiverAddress: "",
     senderAddress: "0x000000000000000000000000000001",
-    uniqueID: "",
+    // uniqueID: "",
     timestamp: "",
   });
   const [mining, setMining] = useState(false);
 
   useEffect(() => {
     ws.onopen = (e) => {
-      console.log("server connected");
-      setLogs([...logs, "Miner initialized"]);
+      setLogs([...logs, { time: "00.01", info: "Miner initialized" }]);
+      console.log("Connection Established");
     };
 
-    worker.postMessage("worker");
+    // worker.postMessage("worker");
   }, []);
+
+  ws.onmessage = (e) => {
+    let data = JSON.parse(e.data);
+    switch (data?.type) {
+      case "mine":
+        const { receiverAddress, senderAddress, token } = sessionData;
+        worker.postMessage({ ...data, receiverAddress, senderAddress, token });
+        break;
+
+      default:
+        break;
+    }
+  };
+
+  worker.onmessage = (e) => {
+    console.log(e.data);
+    ws.send(JSON.stringify(e.data));
+  };
 
   const navigate = (e: Page): void => {
     setPage(e);
@@ -44,9 +63,23 @@ export default function App() {
 
   function startMiner(): void {
     if (!mining) {
-      ws.send("start mining");
+      ws.send(JSON.stringify({ type: "start" }));
+      setLogs([
+        ...logs,
+        {
+          time: `${date.getMinutes() + ":" + date.getSeconds()}`,
+          info: "Finding Block...",
+        },
+      ]);
     } else {
-      setLogs([...logs, "Miner Stoped"]);
+      worker.postMessage({ type: "stop" });
+      setLogs([
+        ...logs,
+        {
+          time: `${date.getMinutes() + ":" + date.getSeconds()}`,
+          info: "Miner Stoped",
+        },
+      ]);
     }
   }
   return (
