@@ -42,7 +42,6 @@ async function mine({ type, prevHash, receiverAddress, senderAddress, token }) {
   let lastReport = performance.now();
 
   while (running) {
-    console.log("running");
     const input = `${prevHash}:${receiverAddress}:${nonce}`;
     const hash = await hashHex(input);
 
@@ -50,24 +49,10 @@ async function mine({ type, prevHash, receiverAddress, senderAddress, token }) {
       bestHash = hash;
     }
 
-    console.log("hash:"+hash);
-
     checked++;
 
     // Puzzle check
-    if (
-      hash.startsWith("0".repeat(difficulty)) /*&& sumBytes(hash) % 100 === 0*/
-    ) {
-      console.log({
-        token,
-        type: "found",
-        senderAddress,
-        receiverAddress,
-        prevHash,
-        nonce,
-        hash,
-        timeStamp: new Date().toISOString(),
-      });
+    if (hash.startsWith("0".repeat(difficulty)) && sumBytes(hash) % 100 === 0) {
       self.postMessage({
         token,
         type: "found",
@@ -83,11 +68,11 @@ async function mine({ type, prevHash, receiverAddress, senderAddress, token }) {
     const now = performance.now();
     if (now - lastReport > 500) {
       lastReport = now;
-      console.log({ lastReport, checked, bestHash });
       // self.postMessage({
       //   type: "progress",
       //   payload: { checked, bestHash },
       // });
+      // console.log({lastReport:lastReport, now:now})
     }
 
     nonce++;

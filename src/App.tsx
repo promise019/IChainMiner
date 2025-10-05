@@ -13,13 +13,18 @@ interface minigData {
   // uniqueID: string | number;
   timestamp: string;
 }
+interface Log {
+  time: string | number;
+  info: string | number;
+}
+
 export default function App() {
   const ws = new WebSocket("ws://localhost:3000");
   const worker = new Worker(new URL("./worker.js", import.meta.url));
   const date = new Date();
 
   const [page, setPage] = useState<Page>("Miner"); //page for navigation
-  const [logs, setLogs] = useState<unknown>([{ time: "00.00", info: "" }]); //logs to be displayed
+  const [logs, setLogs] = useState<Log[]>([{ time: "00.00", info: "" }]); //logs to be displayed
   const [sessionData, setSessionData] = useState<minigData>({
     //session data mined and sent to the blockchain for validation
     token: "",
@@ -53,7 +58,15 @@ export default function App() {
   };
 
   worker.onmessage = (e) => {
+    const date = new Date()
     console.log(e.data);
+    setLogs(prev=>[
+      ...prev,
+      {
+        time: `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`,
+        info: "block found",
+      },
+    ]);
     ws.send(JSON.stringify(e.data));
   };
 
